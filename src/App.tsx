@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { newLesson, quarterSummary, stages, timeUsed, validLesson } from './lesson.ts';
+import { newLesson, parseStoredLessons, quarterSummary, stages, timeUsed, validLesson } from './lesson.ts';
 import type { Lesson } from './lesson.ts';
 import { useLocalState } from './storage.ts';
 
@@ -10,7 +10,7 @@ const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map(value =
 const quarterLabel = (code: string) => Number(code.slice(5)) + 'º trimestre de ' + code.slice(0, 4);
 
 export default function App() {
-  const [lessons, setLessons, storageError] = useLocalState<Lesson[]>('ebd-v1', []);
+  const [lessons, setLessons, storageError] = useLocalState<Lesson[]>('ebd-v1', [], parseStoredLessons);
   const [quarter, setQuarter] = useState(thisQuarter);
   const [draft, setDraft] = useState(() => newLesson(today, thisQuarter));
   const [message, setMessage] = useState('');
@@ -86,7 +86,7 @@ export default function App() {
         <label>Perguntas para discussão<textarea maxLength={4000} value={draft.questions} onChange={e => change('questions', e.target.value)} /></label>
         <label className="check"><input type="checkbox" checked={draft.taught} onChange={e => change('taught', e.target.checked)} /> Aula ministrada</label>
         {(error || storageError) && <p className="error" role="alert">{error || storageError}</p>}
-        {message && <p role="status">{message}</p>}
+        {message && <p role="status">{storageError ? 'Lição atualizada nesta sessão.' : message}</p>}
         <button className="primary">Salvar lição</button>
       </form>
     </section>

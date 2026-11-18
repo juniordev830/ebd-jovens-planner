@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { newLesson, printSections, quarterSummary, timeUsed, validLesson } from '../src/lesson.ts';
+import { newLesson, parseStoredLessons, printSections, quarterSummary, timeUsed, validLesson } from '../src/lesson.ts';
 
 const sample = { ...newLesson('2026-11-22', '2026-04'), title: 'Unidade', theme: 'Igreja', objectives: 'Ler e discutir', references: 'Efésios 4:1–6' };
 test('aceita uma aula completa com agenda equilibrada', () => {
@@ -30,4 +30,13 @@ test('conteúdo de exportação preserva os objetivos e o tempo', () => {
   assert.equal(sections.get('Objetivos pedagógicos'), 'Ler e discutir');
   assert.match(sections.get('Distribuição do tempo')!, /Encerramento — 5 min/);
   assert.ok(!sections.has('Roteiro'));
+});
+
+test('leitura local preserva lições válidas e rejeita estruturas corrompidas', () => {
+  const saved = { ...sample, id: 'lição-1' };
+  assert.deepEqual(parseStoredLessons(JSON.stringify([saved])), [saved]);
+  assert.deepEqual(parseStoredLessons('[]'), []);
+  for (const value of [null, {}, [null], [{ ...saved, date: null }], [saved, saved]]) {
+    assert.throws(() => parseStoredLessons(JSON.stringify(value)), /Formato inválido/);
+  }
 });

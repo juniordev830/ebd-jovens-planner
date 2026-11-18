@@ -39,6 +39,26 @@ export function validLesson(lesson: Lesson) {
   return '';
 }
 
+function isStoredLesson(value: unknown): value is Lesson {
+  if (!value || typeof value !== 'object') return false;
+  const lesson = value as Record<string, unknown>;
+  return typeof lesson.id === 'string' && lesson.id.length > 0
+    && ['title', 'theme', 'quarter', 'date', 'objectives', 'references', 'questions', 'outline']
+      .every(field => typeof lesson[field] === 'string')
+    && typeof lesson.duration === 'number'
+    && stages.every(([field]) => typeof lesson[field] === 'number')
+    && typeof lesson.taught === 'boolean';
+}
+
+export function parseStoredLessons(raw: string): Lesson[] {
+  const lessons: unknown = JSON.parse(raw);
+  if (!Array.isArray(lessons) || !lessons.every(isStoredLesson)
+      || new Set(lessons.map(lesson => lesson.id)).size !== lessons.length) {
+    throw new Error('Formato inválido no armazenamento de lições.');
+  }
+  return lessons;
+}
+
 export function quarterSummary(lessons: Lesson[], quarter: string) {
   const matching = lessons.filter(lesson => lesson.quarter === quarter);
   return {
