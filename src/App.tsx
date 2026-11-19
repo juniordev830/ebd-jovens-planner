@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { newLesson, parseStoredLessons, quarterSummary, stages, timeUsed, validLesson } from './lesson.ts';
 import type { Lesson } from './lesson.ts';
 import { useLocalState } from './storage.ts';
+import { makeBackup, maxBackupBytes, newBackupLessons, readBackup } from './backup.ts';
 
 const now = new Date();
 const thisQuarter = now.getFullYear() + '-0' + (Math.floor(now.getMonth() / 3) + 1);
@@ -17,6 +18,10 @@ export default function App() {
   const [error, setError] = useState('');
   const [exporting, setExporting] = useState(false);
   const [removeId, setRemoveId] = useState('');
+  const [pendingBackup, setPendingBackup] = useState<Lesson[] | null>(null);
+  const [backupError, setBackupError] = useState('');
+  const [backupMessage, setBackupMessage] = useState('');
+  const [readingBackup, setReadingBackup] = useState(false);
   const summary = quarterSummary(lessons, quarter);
   const remaining = draft.duration - timeUsed(draft);
 
@@ -60,6 +65,52 @@ export default function App() {
     }
   }
 
+  function downloadBackup() {
+    const file = new Blob([makeBackup(lessons)], { type: 'application/json' });
+    if (file.size > maxBackupBytes) {
+      setBackupError('O backup excede o limite de 5 MB.');
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'backup-ebd-' + today + '.json';
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setBackupError('');
+    setBackupMessage('Backup exportado.');
+  }
+
+  async function selectBackup(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+    setPendingBackup(null);
+    setBackupMessage('');
+    setBackupError('');
+    if (file.size > maxBackupBytes) {
+      setBackupError('Escolha um backup de até 5 MB.');
+      return;
+    }
+    setReadingBackup(true);
+    try {
+      setPendingBackup(readBackup(await file.text()));
+    } catch {
+      setBackupError('Backup inválido. Escolha um arquivo JSON exportado pelo Planejador.');
+    } finally {
+      setReadingBackup(false);
+    }
+  }
+
+  function confirmBackup() {
+    if (!pendingBackup) return;
+    const additions = newBackupLessons(lessons, pendingBackup);
+    setLessons(current => [...current, ...newBackupLessons(current, pendingBackup)]);
+    if (additions.length) setQuarter(additions[0].quarter);
+    setPendingBackup(null);
+    setBackupMessage(additions.length + ' lição(ões) adicionada(s).');
+  }
+
   return <div className="split">
     <section className="panel stack">
       <div className="row between"><h2>{draft.id ? 'Editar lição' : 'Nova lição'}</h2>
@@ -101,6 +152,20 @@ export default function App() {
           <div className="stat">Ministradas<strong>{summary.taught}</strong></div>
           <div className="stat">Minutos<strong>{summary.minutes}</strong></div>
         </div>
+      </section>
+      <section className="panel stack">
+        <h2>Backup das lições</h2>
+        <button type="button" onClick={downloadBackup} disabled={!lessons.length}>Baixar backup JSON</button>
+        <label>Arquivo de backup<input type="file" accept=".json,application/json" disabled={readingBackup} onChange={selectBackup} /></label>
+        {pendingBackup && <>
+          <p role="status">{newBackupLessons(lessons, pendingBackup).length} lição(ões) nova(s). As lições existentes são mantidas.</p>
+          <div className="row">
+            <button type="button" onClick={confirmBackup}>Importar lições</button>
+            <button type="button" onClick={() => setPendingBackup(null)}>Cancelar</button>
+          </div>
+        </>}
+        {backupError && <p role="alert" className="error">{backupError}</p>}
+        {backupMessage && <p role="status">{storageError ? backupMessage + ' Confira o aviso sobre o armazenamento local.' : backupMessage}</p>}
       </section>
       <section className="panel stack">
         <h2>Lições do trimestre</h2>
