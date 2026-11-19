@@ -11,7 +11,8 @@ const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map(value =
 const quarterLabel = (code: string) => Number(code.slice(5)) + 'º trimestre de ' + code.slice(0, 4);
 
 export default function App() {
-  const [lessons, setLessons, storageError] = useLocalState<Lesson[]>('ebd-v1', [], parseStoredLessons);
+  const [lessons, setLessons, storageError, storageBlocked, restoreStorage] =
+    useLocalState<Lesson[]>('ebd-v1', [], parseStoredLessons);
   const [quarter, setQuarter] = useState(thisQuarter);
   const [draft, setDraft] = useState(() => newLesson(today, thisQuarter));
   const [message, setMessage] = useState('');
@@ -103,9 +104,10 @@ export default function App() {
   }
 
   function confirmBackup() {
-    if (!pendingBackup) return;
+    if (!pendingBackup || (storageBlocked && !pendingBackup.length)) return;
     const additions = newBackupLessons(lessons, pendingBackup);
     setLessons(current => [...current, ...newBackupLessons(current, pendingBackup)]);
+    if (storageBlocked) restoreStorage();
     if (additions.length) setQuarter(additions[0].quarter);
     setPendingBackup(null);
     setBackupMessage(additions.length + ' lição(ões) adicionada(s).');
@@ -159,8 +161,9 @@ export default function App() {
         <label>Arquivo de backup<input type="file" accept=".json,application/json" disabled={readingBackup} onChange={selectBackup} /></label>
         {pendingBackup && <>
           <p role="status">{newBackupLessons(lessons, pendingBackup).length} lição(ões) nova(s). As lições existentes são mantidas.</p>
+          {storageBlocked && <p>Importar substitui os dados locais que o navegador não conseguiu abrir.</p>}
           <div className="row">
-            <button type="button" onClick={confirmBackup}>Importar lições</button>
+            <button type="button" onClick={confirmBackup} disabled={storageBlocked && !pendingBackup.length}>Importar lições</button>
             <button type="button" onClick={() => setPendingBackup(null)}>Cancelar</button>
           </div>
         </>}
