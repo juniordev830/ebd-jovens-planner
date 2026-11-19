@@ -22,6 +22,8 @@ npm run build
 
 Cadastre uma lição com data, objetivos e referências, distribua o tempo e baixe o PDF.
 
+Em **Backup das lições**, baixe um JSON com todos os trimestres. Em outro navegador, selecione o arquivo, confira quantas lições serão adicionadas e clique em **Importar lições**. A importação preserva as lições com IDs que já existem.
+
 ## Limitações
 
 As lições são criadas pelo professor. Não há reprodução de revistas ou lições da CPAD.
