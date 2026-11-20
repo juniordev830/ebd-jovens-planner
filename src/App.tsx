@@ -114,7 +114,7 @@ export default function App() {
   }
 
   return <div className="split">
-    <section className="panel stack">
+    <section className="panel stack" id="planejar" tabIndex={-1}>
       <div className="row between"><h2>{draft.id ? 'Editar lição' : 'Nova lição'}</h2>
         {draft.id && <button onClick={() => edit(newLesson(today, quarter))}>Nova lição</button>}
       </div>
@@ -144,7 +144,7 @@ export default function App() {
       </form>
     </section>
     <aside className="stack">
-      <section className="panel stack">
+      <section className="panel stack" id="acompanhamento" tabIndex={-1}>
         <h2>Acompanhamento</h2>
         <label>Filtrar trimestre<select value={quarter} onChange={e => setQuarter(e.target.value)}>
           {[...new Set([thisQuarter, ...lessons.map(lesson => lesson.quarter)])].sort().reverse().map(code => <option key={code} value={code}>{quarterLabel(code)}</option>)}
@@ -170,7 +170,7 @@ export default function App() {
         {backupError && <p role="alert" className="error">{backupError}</p>}
         {backupMessage && <p role="status">{storageError ? backupMessage + ' Confira o aviso sobre o armazenamento local.' : backupMessage}</p>}
       </section>
-      <section className="panel stack">
+      <section className="panel stack" id="licoes" tabIndex={-1}>
         <h2>Lições do trimestre</h2>
         {!summary.lessons.length && <p className="muted">Cadastre a primeira lição para iniciar o planejamento.</p>}
         <ul className="list">{summary.lessons.map(lesson => <li className="subtle stack" key={lesson.id}>
