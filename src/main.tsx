@@ -16,7 +16,11 @@ createRoot(document.getElementById('root')!).render(
     <main id="conteudo">
       <div className="intro">
         <h1>Planner EBD Jovens</h1>
-        <p>SUBPlanner EBD Jovens</p>
+        <nav className="atalhos" aria-label="Seções desta página">
+          <a href="#planejar">Planejar aula</a>
+          <a href="#acompanhamento">Acompanhamento</a>
+          <a href="#licoes">Lições do trimestre</a>
+        </nav>
       </div>
       <App />
     </main>
