@@ -8,6 +8,10 @@ export function makeBackup(lessons: Lesson[]): string {
 }
 
 export function readBackup(raw: string): Lesson[] {
+  // Check code units first to avoid encoding arbitrarily large strings.
+  if (raw.length > maxBackupBytes || new TextEncoder().encode(raw).byteLength > maxBackupBytes) {
+    throw new Error('O backup excede o limite de 5 MB.');
+  }
   const backup: unknown = JSON.parse(raw);
   if (!backup || typeof backup !== 'object'
       || !('format' in backup) || backup.format !== 'ebd-jovens-planner'
@@ -18,6 +22,12 @@ export function readBackup(raw: string): Lesson[] {
   const lessons = parseStoredLessons(JSON.stringify(backup.lessons));
   if (lessons.some(lesson => validLesson(lesson))) throw new Error('O backup contém lições inválidas.');
   return lessons;
+}
+
+/** Reject malformed UTF-8 instead of silently replacing bytes in lesson text. */
+export function decodeBackup(bytes: ArrayBuffer): Lesson[] {
+  if (bytes.byteLength > maxBackupBytes) throw new Error('O backup excede o limite de 5 MB.');
+  return readBackup(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
 }
 
 export function newBackupLessons(current: Lesson[], incoming: Lesson[]): Lesson[] {
