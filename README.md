@@ -22,7 +22,7 @@ npm run build
 
 Cadastre uma lição com data, objetivos e referências, distribua o tempo e baixe o PDF.
 
-Em **Backup das lições**, baixe um JSON com todos os trimestres. Em outro navegador, selecione o arquivo, confira quantas lições serão adicionadas e clique em **Importar lições**. A importação preserva as lições com IDs que já existem.
+Em **Backup das lições**, baixe um JSON com todos os trimestres. Em outro navegador, selecione o arquivo, confira quantas lições serão adicionadas e clique em **Importar lições**. A importação preserva as lições com IDs que já existem. Os backups devem ser JSON em UTF-8 válido de até 5 MiB (5.242.880 bytes). Arquivos inválidos são rejeitados antes de importar qualquer lição.
 
 ## Limitações
 
