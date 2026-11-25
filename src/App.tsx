@@ -3,7 +3,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { newLesson, parseStoredLessons, quarterSummary, stages, timeUsed, validLesson } from './lesson.ts';
 import type { Lesson } from './lesson.ts';
 import { useLocalState } from './storage.ts';
-import { makeBackup, maxBackupBytes, newBackupLessons, readBackup } from './backup.ts';
+import { decodeBackup, makeBackup, maxBackupBytes, newBackupLessons } from './backup.ts';
 
 const now = new Date();
 const thisQuarter = now.getFullYear() + '-0' + (Math.floor(now.getMonth() / 3) + 1);
@@ -95,7 +95,7 @@ export default function App() {
     }
     setReadingBackup(true);
     try {
-      setPendingBackup(readBackup(await file.text()));
+      setPendingBackup(decodeBackup(await file.arrayBuffer()));
     } catch {
       setBackupError('Backup inválido. Escolha um arquivo JSON exportado pelo Planejador.');
     } finally {

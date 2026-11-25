@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { newLesson } from '../src/lesson.ts';
-import { makeBackup, newBackupLessons, readBackup } from '../src/backup.ts';
+import { decodeBackup, makeBackup, maxBackupBytes, newBackupLessons, readBackup } from '../src/backup.ts';
 
 const lesson = {
   ...newLesson('2026-11-22', '2026-04'),
@@ -22,4 +22,18 @@ test('o backup rejeita versões desconhecidas e dados duplicados ou inválidos',
 test('a importação conserva a lição local quando encontra o mesmo ID', () => {
   const another = { ...lesson, id: 'aula-2' };
   assert.deepEqual(newBackupLessons([lesson], [{ ...lesson, title: 'Outra versão' }, another]), [another]);
+});
+
+test('rejeita backups acima do limite em bytes, inclusive com caracteres multibyte', () => {
+  assert.throws(() => readBackup(' '.repeat(maxBackupBytes + 1)), /limite/);
+  const raw = makeBackup([{ ...lesson, outline: 'á'.repeat(Math.ceil(maxBackupBytes / 2)) }]);
+  assert.ok(raw.length < maxBackupBytes);
+  assert.throws(() => readBackup(raw), /limite/);
+});
+
+test('decodifica UTF-8 válido e rejeita sequências malformadas', () => {
+  const bytes = new TextEncoder().encode(makeBackup([lesson]));
+  assert.deepEqual(decodeBackup(bytes.buffer as ArrayBuffer), [lesson]);
+  assert.throws(() => decodeBackup(new Uint8Array([0xc3, 0x28]).buffer));
+  assert.throws(() => decodeBackup(new ArrayBuffer(maxBackupBytes + 1)), /limite/);
 });
