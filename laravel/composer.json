@@ -1,6 +1,6 @@
 {
   "name": "juniordev830/ebd-jovens-archive",
-  "description": "Arquivo autenticado de li\u00e7\u00f5es para o frontend React EBD Jovens",
+  "description": "Arquivo autenticado de lições para o frontend React EBD Jovens",
   "type": "project",
   "require": {
     "php": "^8.3",
@@ -30,6 +30,9 @@
   },
   "config": {
     "sort-packages": true,
-    "allow-plugins": false
+    "allow-plugins": false,
+    "platform": {
+      "php": "8.3.0"
+    }
   }
 }

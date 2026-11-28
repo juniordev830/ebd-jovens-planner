@@ -66,3 +66,7 @@ A suíte usa SQLite em memória por padrão via `.env.testing`, que contém apen
 ## Operação
 
 O build estático continua utilizável sem a API; o painel de arquivo precisa do backend e do proxy. Em uma implantação futura, configure o proxy `/archive-api` para o backend e sirva ambos por HTTPS. Não inclua o token no bundle. `CACHE_STORE=file` é destinado a um servidor local; múltiplas instâncias exigem um cache compartilhado e uma revisão de proxy/IP. Filas, Sanctum e policies por usuário ficam fora deste escopo de proprietário único.
+
+O Composer resolve as dependências com `config.platform.php=8.3.0` para manter o lock instalável em PHP 8.3 e 8.4. Não use `--ignore-platform-reqs` para contornar incompatibilidades.
+
+Na raiz, `npx playwright install chromium` prepara o navegador e `npm run test:e2e` verifica o percurso React → API → importação, a limpeza do token após reload e o layout móvel. O teste usa exclusivamente `laravel/database/e2e.sqlite`, recriado em cada execução; não usa seu banco configurado. O GitHub Actions executa esse percurso com Chromium.
