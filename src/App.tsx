@@ -4,6 +4,7 @@ import { newLesson, parseStoredLessons, quarterSummary, stages, timeUsed, validL
 import type { Lesson } from './lesson.ts';
 import { useLocalState } from './storage.ts';
 import { makeBackup, maxBackupBytes, newBackupLessons, readBackup } from './backup.ts';
+import ArchivePanel from './ArchivePanel.tsx';
 
 const now = new Date();
 const thisQuarter = now.getFullYear() + '-0' + (Math.floor(now.getMonth() / 3) + 1);
@@ -144,6 +145,9 @@ export default function App() {
       </form>
     </section>
     <aside className="stack">
+      <ArchivePanel lessons={lessons} quarter={quarter} onImport={lesson => {
+        setLessons(current => current.some(item => item.id === lesson.id) ? current : [...current, lesson]);
+      }} />
       <section className="panel stack" id="acompanhamento" tabIndex={-1}>
         <h2>Acompanhamento</h2>
         <label>Filtrar trimestre<select value={quarter} onChange={e => setQuarter(e.target.value)}>

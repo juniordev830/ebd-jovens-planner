@@ -41,3 +41,7 @@ As fontes e licenças estão em [docs/FONTES.md](docs/FONTES.md). A licença do 
 Como testar que um planejamento acima do tempo disponível é identificado antes da exportação? O [guia de engenharia reversa](docs/ENGENHARIA_REVERSA.md) reúne o mapa dos módulos e uma pergunta técnica baseada no projeto.
 
 Mantido por [João Junior](https://github.com/juniordev830).
+
+## Arquivo opcional com Laravel 13
+
+O painel “Arquivo no servidor” salva cópias das lições em uma API Laravel/Eloquent e PostgreSQL. O envio é manual e exige token; o modo local, os PDFs e os backups permanecem disponíveis. Atualizações no servidor exigem a revisão atual da lição para evitar sobrescritas. Consulte [instalação, API, banco e testes](laravel/README.md) e a [arquitetura](ARQUITETURA.md).
