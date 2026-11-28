@@ -1,0 +1,30 @@
+const { test, expect } = require('@playwright/test');
+
+test('arquiva, importa e mantém o token fora do armazenamento persistente', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(String(error)));
+  await page.goto('/');
+  await page.getByLabel('Título', { exact: true }).fill('Aula de teste do arquivo');
+  await page.getByLabel('Tema', { exact: true }).fill('Unidade');
+  await page.getByLabel('Objetivos pedagógicos').fill('Ler e discutir João 15.');
+  await page.getByLabel('Referências bíblicas').fill('João 15:1–8');
+  await page.getByRole('button', { name: 'Salvar lição', exact: true }).click();
+  await page.getByLabel('Token de acesso', { exact: true }).fill(process.env.EBD_E2E_TOKEN);
+  await page.getByRole('button', { name: 'Consultar trimestre', exact: true }).click();
+  await expect(page.getByText('0 lição(ões) no arquivo deste trimestre.', { exact: true })).toBeVisible();
+  await page.getByLabel('Lição local para arquivar').selectOption({ label: 'Aula de teste do arquivo' });
+  await page.getByRole('button', { name: 'Salvar cópia no servidor', exact: true }).click();
+  await expect(page.getByText('Lição salva no arquivo do servidor.', { exact: true })).toBeVisible();
+  const stored = await page.evaluate(() => JSON.stringify(localStorage));
+  expect(stored).not.toContain(process.env.EBD_E2E_TOKEN);
+  await page.getByRole('button', { name: 'Excluir', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar exclusão', exact: true }).click();
+  await page.getByRole('button', { name: 'Adicionar neste navegador', exact: true }).click();
+  await expect(page.getByText('Lição adicionada neste navegador.', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel('Token de acesso', { exact: true })).toHaveValue('');
+  expect(await page.evaluate(() => localStorage.getItem('ebd-v1'))).toContain('Aula de teste do arquivo');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  expect(errors).toEqual([]);
+});
